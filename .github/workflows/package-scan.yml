@@ -87,62 +87,62 @@ jobs:
         with:
           args: "--report --severity-threshold=high --scan=resource-changes"
 
-  # terraform-create:
-  #   needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
-  #   runs-on: ubuntu-latest
+  terraform-create:
+    needs: [package-scan-npm-audit, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan]
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
       
-  #     - name: Set up Terraform
-  #       uses: hashicorp/setup-terraform@v1
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
 
-  # - name: Configure AWS credentials
-  #   uses: aws-actions/configure-aws-credentials@v1
-  #   with:
-  #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #     aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
 
-  #     - name: Terraform init
-  #       run: terraform init
+      - name: Terraform init
+        run: terraform init
 
-  #     - name: Terraform fmt
-  #       run: terraform fmt
+      - name: Terraform fmt
+        run: terraform fmt
 
-  #     - name: Terraform plan
-  #       run: terraform plan 
+      - name: Terraform plan
+        run: terraform plan 
 
-  #     - name: Terraform apply
-  #       run: terraform apply -auto-approve
+      - name: Terraform apply
+        run: terraform apply -auto-approve
 
-  # terraform-wait:
-  #   needs: terraform-create
-  #   runs-on: ubuntu-latest
+  terraform-wait:
+    needs: terraform-create
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - name: Pause 2min to verify lambda creation and test
-  #       run: sleep 120
+    steps:
+      - name: Pause 2min to verify lambda creation and test
+        run: sleep 120
 
-  # terraform-destroy:
-  #   needs: terraform-wait
-  #   runs-on: ubuntu-latest
+  terraform-destroy:
+    needs: terraform-wait
+    runs-on: ubuntu-latest
 
-  #   steps:
-  #     - uses: actions/checkout@v2
+    steps:
+      - uses: actions/checkout@v2
       
-  #     - name: Set up Terraform
-  #       uses: hashicorp/setup-terraform@v1
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
 
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-  #         aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
       
-  #     - name: Terraform init
-  #       run: terraform init
+      - name: Terraform init
+        run: terraform init
 
-  #     - name: Terraform destroy
-  #       run: terraform destroy -auto-approve
+      - name: Terraform destroy
+        run: terraform destroy -auto-approve
