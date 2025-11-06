@@ -9,11 +9,19 @@ on:
 jobs:
   Initial-Checks:
     runs-on: ubuntu-latest
-
     steps:
     - name: Getting initiator name
       run: echo "Workflow initiated by ${{ github.actor }} from branch ${{ github.ref_name }}"
 
+  install-dependencies:
+    runs-on: ubuntu-latest
+    needs: [pre-deploy]
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+      - name: Run installation of dependencies commands
+        run: npm install
+  
   terraform-checks:
     runs-on: ubuntu-latest
     needs: Initial-Checks
@@ -47,35 +55,53 @@ jobs:
     - name: Run TFLint
       run: tflint -f compact
 
-  ########################################
-  # Add a job for snyk scan of your code #
-  ########################################
+  snyk-checks:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    outputs:
+      status: ${{ steps.set-status.outputs.status }}
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
 
-  ########################################
-  # job name: snyk-checks
-  # Enable:
-  # - snyk code test
-  # - snyk test
-  # - snyk iac test
-  # - snyk container test <image-name>
-  # Also, enable:
-  # outputs:
-  #   status: ${{ job.status }}
-  # for use in the summary
-  ########################################
+      - name: Install Snyk CLI
+        run: npm install -g snyk
 
-  #################################################
-  # Finally, update summary for snyk-check        #
-  # Update needs statement to include snyk-checks #
-  #################################################
+      - name: Run OSC Snyk Scan
+        id: osc
+        run: |
+          snyk test --severity-threshold=high || echo "failed" > osc.status
+        continue-on-error: true 
+
+      - name: Run App Snyk Scan
+        id: app
+        run: |
+          snyk code test || echo "failed" > app.status
+        continue-on-error: true
+
+      - name: Run IaC Snyk Scan
+        id: iac
+        run: |
+          snyk iac test --report --severity-threshold=high --scan=resource-changes || echo "failed" > iac.status
+        continue-on-error: true
+
+      - name: Set aggregated Snyk status
+        id: set-status
+        run: |
+          STATUS="success"
+          if [ -f osc.status ] || [ -f app.status ] || [ -f iac.status ]; then
+            STATUS="failure"
+          fi
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+  
   summary:
-    needs: [terraform-checks] # add snyk-checks 
+    needs: [terraform-checks, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan] # add snyk-checks 
     runs-on: ubuntu-latest
     steps:
       - name: Adding markdown
         run: |
           TF_STATUS=${{ needs.terraform-checks.outputs.status }}
-          # SNYK_STATUS=${{ needs.snyk-checks.outputs.status }}
+          SNYK_STATUS=${{ needs.snyk-checks.outputs.status }}
 
           echo '## 🚀 Preparing Build Summary 🚀' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
