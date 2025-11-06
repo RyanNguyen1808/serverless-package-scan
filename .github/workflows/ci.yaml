@@ -102,7 +102,7 @@ jobs:
           echo "status=$STATUS" >> $GITHUB_OUTPUT
   
   summary:
-    needs: [terraform-checks, package-osc-scan-snyk-scan, package-app-scan-snyk-scan, package-iac-scan-snyk-scan] # add snyk-checks 
+    needs: [terraform-checks, synk-checks] # add snyk-checks 
     runs-on: ubuntu-latest
     steps:
       - name: Adding markdown
