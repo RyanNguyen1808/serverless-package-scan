@@ -125,7 +125,7 @@ jobs:
   #       run: sleep 120
 
   terraform-destroy:
-    needs: terraform-wait
+    # needs: terraform-wait
     runs-on: ubuntu-latest
 
     steps:
