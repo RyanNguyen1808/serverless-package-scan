@@ -2,8 +2,8 @@
 
 terraform {
   backend "s3" {
-    bucket = "sctp-ce9-tfstate"
-    key    = "package-vul-scan-luqman.tfstate" #Change the value of this to <your suggested name>.tfstate for  example
+    bucket = "sctp-ce11-tfstate"
+    key    = "package-vul-scan-ryan.tfstate"
     region = "us-east-1"
   }
 }
