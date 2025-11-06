@@ -2,9 +2,10 @@ name: CI Checks
 run-name: Running Terraform Checks by ${{ github.actor }}
 
 on:
- pull_request:
+  pull_request:
    branches:
      - main
+  workflow_dispatch:
 
 jobs:
   Initial-Checks:
@@ -71,18 +72,24 @@ jobs:
         id: osc
         run: |
           snyk test --severity-threshold=high || echo "failed" > osc.status
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true 
 
       - name: Run App Snyk Scan
         id: app
         run: |
           snyk code test || echo "failed" > app.status
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
 
       - name: Run IaC Snyk Scan
         id: iac
         run: |
           snyk iac test --report --severity-threshold=high --scan=resource-changes || echo "failed" > iac.status
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         continue-on-error: true
 
       - name: Set aggregated Snyk status
